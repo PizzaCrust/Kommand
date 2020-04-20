@@ -36,6 +36,6 @@ fun parseArguments(argList: MutableList<String>, parsers: List<ArgumentParser<*>
 fun main() {
     println(
             parseArguments(mutableListOf("1", "This is a test", "sentence."), listOf(IntegerParser(),
-            RemainderContentParser()))
+            LeftoverParser()))
     )
 }

@@ -100,7 +100,7 @@ class TestCommand:
                 name = "test",
                 requirements = listOf(TestRequirement(true), TestRequirement(true)),
                 arguments = listOf(IntegerParser() to true,
-                        RemainderContentParser() to false)
+                        LeftoverParser() to false)
         ) {
     override fun called(source: Any, argumentValues: List<*>) {
         println(argumentValues)
