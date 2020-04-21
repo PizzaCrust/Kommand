@@ -1,12 +1,19 @@
 package kommand
 
-class IntegerParser: ArgumentParser<Int>(1) {
+object IntegerParser: ArgumentParser<Int>(1) {
     override fun parseToken(token: String): Int? {
         return token.toIntOrNull()
     }
 }
 
-class LeftoverParser: ArgumentParser<String>() {
+class VarargParser<T>(private val singleTokenParser: ArgumentParser<T>): ArgumentParser<List<T>>() {
+    override fun parseToken(token: String): List<T>? {
+        TODO("Not yet implemented")
+    }
+
+}
+
+object LeftoverParser: ArgumentParser<String>() {
     override fun parseToken(token: String): String? {
         if (token.isEmpty()) {
             return null

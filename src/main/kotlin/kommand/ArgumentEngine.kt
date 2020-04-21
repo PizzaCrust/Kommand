@@ -23,7 +23,7 @@ abstract class ArgumentParser<T>(val tokenSize: Int = -1) {
 
 }
 
-fun parseArguments(argList: MutableList<String>, parsers: List<ArgumentParser<*>>): List<*> {
+fun parseArguments(argList: MutableList<String>, parsers: List<ArgumentParser<*>>): List<Any?> {
     val values = mutableListOf<Any?>()
     parsers.forEach {
         if (argList.isNotEmpty()) {
@@ -31,11 +31,4 @@ fun parseArguments(argList: MutableList<String>, parsers: List<ArgumentParser<*>
         }
     }
     return values
-}
-
-fun main() {
-    println(
-            parseArguments(mutableListOf("1", "This is a test", "sentence."), listOf(IntegerParser(),
-            LeftoverParser()))
-    )
 }
