@@ -107,10 +107,13 @@ abstract class Command<S>(val prefix: String = "!",
         return delegate
     }
 
+    protected open fun initLogging(source: S) {}
+
     fun execute(source: S, cmd: String) {
         if (!cmd.startsWith("$prefix$name")) {
             return
         }
+        initLogging(source)
         if (!hasAllRequirements(source, requirements)) {
             respond("Missing permission(s) to execute this command.")
             return

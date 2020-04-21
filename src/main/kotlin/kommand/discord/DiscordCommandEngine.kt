@@ -10,18 +10,21 @@ fun TextChannel.msg(msg: String) {
     sendMessage(msg).queue()
 }
 
-open class DiscordCommand(prefix: String = "!",
+abstract class DiscordCommand(prefix: String = "!",
                      name: String,
                      requirements: List<PermissionRequirement<GuildMessageReceivedEvent>>):
         Command<GuildMessageReceivedEvent>(prefix, name, requirements) {
     private var channel: TextChannel? = null
+
     override fun respond(msg: String) {
         if (channel == null) {
             throw Exception("Attempting to send message with no channel")
         }
         channel!!.msg(msg)
     }
-    override fun called(source: GuildMessageReceivedEvent) {
+
+    override fun initLogging(source: GuildMessageReceivedEvent) {
         channel = source.channel
     }
+
 }
