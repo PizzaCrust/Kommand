@@ -10,7 +10,7 @@ fun TextChannel.msg(msg: String) {
     sendMessage(msg).queue()
 }
 
-class DiscordCommand(prefix: String = "!",
+open class DiscordCommand(prefix: String = "!",
                      name: String,
                      requirements: List<PermissionRequirement<GuildMessageReceivedEvent>>):
         Command<GuildMessageReceivedEvent>(prefix, name, requirements) {
