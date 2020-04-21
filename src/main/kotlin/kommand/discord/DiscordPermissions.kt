@@ -18,7 +18,7 @@ private class DiscordRolePermissionsReq(private val permissions: List<Permission
     }
 }
 
-fun require(vararg permissions: Permission): PermissionRequirement<*> {
+fun require(vararg permissions: Permission): PermissionRequirement<GuildMessageReceivedEvent> {
     return DiscordRolePermissionsReq(permissions.toList())
 }
 
@@ -28,7 +28,7 @@ private class DiscordRoleReq(private val roles: List<Role>): ReceiveMessageRequi
     }
 }
 
-fun require(vararg roles: Role): PermissionRequirement<*> {
+fun require(vararg roles: Role): PermissionRequirement<GuildMessageReceivedEvent> {
     return DiscordRoleReq(roles.toList())
 }
 
@@ -38,6 +38,6 @@ private class SpecificUserReq(private val userIds: List<Long>): ReceiveMessageRe
     }
 }
 
-fun require(vararg users: Long): PermissionRequirement<*> {
+fun require(vararg users: Long): PermissionRequirement<GuildMessageReceivedEvent> {
     return SpecificUserReq(users.toList())
 }
