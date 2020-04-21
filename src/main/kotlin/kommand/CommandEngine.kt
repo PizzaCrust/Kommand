@@ -25,7 +25,7 @@ abstract class Command<S>(val prefix: String = "!",
                           val name: String,
                           val requirements: List<PermissionRequirement<S>> = listOf()) {
 
-    protected fun respond(msg: String) {
+    protected open fun respond(msg: String) {
         println(msg)
     }
 
