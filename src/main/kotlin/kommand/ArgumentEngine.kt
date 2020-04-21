@@ -1,10 +1,22 @@
 package kommand
 
-abstract class ArgumentParser<T>(val tokenSize: Int = -1) {
+fun fullLengthToken(token: List<String>): Int {
+    return token.size
+}
+
+fun specificLengthToken(tokenSize: Int): (List<String>) -> Int {
+    return {
+        tokenSize
+    }
+}
+
+// main disadvantage, can't detect correct vararg token size by detecting next token due to lack
+// of data
+abstract class ArgumentParser<T>(val tokenSizeFunc: (List<String>) -> Int = ::fullLengthToken) {
 
     private fun readToken(tokenList: MutableList<String>): String {
-        var sizeToRead = tokenSize
-        if (tokenSize == -1) {
+        var sizeToRead = tokenSizeFunc(tokenList)
+        if (tokenSizeFunc(tokenList) == -1) {
             sizeToRead = tokenList.size
         }
         val builder = StringBuilder()

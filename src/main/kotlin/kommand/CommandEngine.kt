@@ -1,5 +1,6 @@
 package kommand
 
+import java.lang.Exception
 import java.lang.StringBuilder
 import kotlin.reflect.KProperty
 
@@ -140,16 +141,16 @@ class TestCommand:
                 requirements = listOf(TestRequirement(true), TestRequirement(true))
         ) {
 
-    val integer: Int by argument(IntegerParser)
+    //val integer: List<Int?> by argument(FullVarargParser(IntegerParser))
     val integer1: Int by argument(IntegerParser)
-    val integer2: Int? by optionalArgument(IntegerParser)
-    val leftover by optionalArgument(LeftoverParser)
+    //val integer2: Int? by optionalArgument(IntegerParser)
+    //val leftover by optionalArgument(LeftoverParser)
 
     override fun called(source: Any) {
-        println("$integer $integer1 $integer2 $leftover")
+        println("$integer1")
     }
 }
 
 fun main() {
-    TestCommand().execute(0, "!test 1 1 test test test test")
+    TestCommand().execute(0, "!test test 1 test 1 1")
 }
