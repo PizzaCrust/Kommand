@@ -7,16 +7,6 @@ interface PermissionRequirement<S> {
     fun allowed(source: S): Boolean
 }
 
-fun <S> hasAllRequirements(source: S, reqs: List<PermissionRequirement<S>>): Boolean {
-    var allowed = true
-    reqs.forEach {
-        if (!it.allowed(source)) {
-            allowed = false
-        }
-    }
-    return allowed
-}
-
 
 abstract class Command<S>(val prefix: String = "!",
                           val name: String,
@@ -54,14 +44,13 @@ abstract class Command<S>(val prefix: String = "!",
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     abstract class ArgDelegate<T>(val definition: ArgumentDefinition<T>) {
         open operator fun getValue(thisRef: Any?, property: KProperty<*>): T = definition.value as T
     }
 
-    @Suppress("UNCHECKED_CAST")
     class OptArgDelegate<T: Any?>(definition: ArgumentDefinition<T>): ArgDelegate<T>(definition)
 
-    @Suppress("UNCHECKED_CAST")
     class ReqArgDelegate<T: Any>(definition: ArgumentDefinition<T>): ArgDelegate<T>(definition)
 
     val argDefinitions: MutableList<ArgumentDefinition<*>> = mutableListOf()
@@ -81,7 +70,7 @@ abstract class Command<S>(val prefix: String = "!",
             return
         }
         initLogging(source)
-        if (!hasAllRequirements(source, requirements)) {
+        if (requirements.all { it.allowed(source) }) {
             respond("Missing permission(s) to execute this command.")
             return
         }
