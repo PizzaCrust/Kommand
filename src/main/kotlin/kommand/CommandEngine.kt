@@ -1,6 +1,5 @@
 package kommand
 
-import java.lang.Exception
 import java.lang.StringBuilder
 import kotlin.reflect.KProperty
 
@@ -18,8 +17,6 @@ fun <S> hasAllRequirements(source: S, reqs: List<PermissionRequirement<S>>): Boo
     return allowed
 }
 
-// parser and whether its required
-typealias ArgumentDefinition<T> = Pair<ArgumentParser<T>, Boolean>
 
 abstract class Command<S>(val prefix: String = "!",
                           val name: String,
@@ -31,80 +28,50 @@ abstract class Command<S>(val prefix: String = "!",
 
     protected abstract fun called(source: S)
 
-    private val argParsers: List<ArgumentParser<*>>
-        get() {
-            val parsers = mutableListOf<ArgumentParser<*>>()
-            argDefinitions.forEach {
-                parsers.add(it.first)
-            }
-            return parsers
-        }
-
-    private fun verifyParameters(values: List<*>): Boolean {
-        argDefinitions.forEachIndexed { index, pair ->
-            if (pair.second) {
-                if (values.size <= index) {
-                    return false
-                }
-                if (values[index] == null) {
-                    return false
-                }
-            }
-        }
-        return true
-    }
-
     val usage: String
         get() {
             val builder = StringBuilder()
             builder.append("Usage: $prefix$name ")
             argDefinitions.forEach {
                 builder.append("<")
-                if (it.second) {
+                if (it.required) {
                     builder.append("REQUIRED: ")
                 } else {
                     builder.append("OPTIONAL: ")
                 }
-                builder.append(it.first.javaClass.simpleName).append("> ")
+                builder.append(it.type.simpleName).append("> ")
             }
             return builder.toString().trim()
         }
 
-    private var argsValues = mutableListOf<Any?>()
-
-    @Suppress("UNCHECKED_CAST")
-    class ArgDelegate<T> internal constructor(val index: Int, val argsValues: List<Any?>) {
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): T? {
-            if (argsValues.size <= index) {
-                return null
-            }
-            return argsValues[index] as T
+    data class ArgumentDefinition<T>(val typeParser: ArgumentParser<T>,
+                                     val type: Class<T>, val required: Boolean) {
+        var value: T? = null
+        fun parse(argList: MutableList<String>): Boolean {
+            value = typeParser.parse(argList)
+            if (value == null && required) return false
+            return true
         }
     }
 
+    abstract class ArgDelegate<T>(val definition: ArgumentDefinition<T>) {
+        open operator fun getValue(thisRef: Any?, property: KProperty<*>): T = definition.value as T
+    }
+
     @Suppress("UNCHECKED_CAST")
-    class ReqArgDelegate<T> internal constructor(val index: Int, val argsValues: List<Any?>) {
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
-            return argsValues[index] as T
-        }
+    class OptArgDelegate<T: Any?>(definition: ArgumentDefinition<T>): ArgDelegate<T>(definition)
+
+    @Suppress("UNCHECKED_CAST")
+    class ReqArgDelegate<T: Any>(definition: ArgumentDefinition<T>): ArgDelegate<T>(definition)
+
+    val argDefinitions: MutableList<ArgumentDefinition<*>> = mutableListOf()
+
+    inline fun <reified T: Any?> optionalArgument(parser: ArgumentParser<T>): ArgDelegate<T> {
+        return OptArgDelegate(ArgumentDefinition(parser, T::class.java,false).apply { argDefinitions.add(this) })
     }
 
-    private val argDefinitions: MutableList<ArgumentDefinition<*>> = mutableListOf()
-
-    private var delegationIndex = 0
-
-    fun <T> optionalArgument(parser: ArgumentParser<T>): ArgDelegate<T> {
-        argDefinitions.add(parser to false)
-        var delegate = ArgDelegate<T>(delegationIndex, argsValues)
-        delegationIndex++
-        return delegate
-    }
-
-    fun <T> argument(parser: ArgumentParser<T>): ReqArgDelegate<T> {
-        argDefinitions.add(parser to true)
-        var delegate = ReqArgDelegate<T>(delegationIndex, argsValues)
-        delegationIndex++
-        return delegate
+    inline fun <reified T: Any> argument(parser: ArgumentParser<T>): ArgDelegate<T> {
+        return ReqArgDelegate(ArgumentDefinition(parser, T::class.java, true).apply { argDefinitions.add(this) })
     }
 
     protected open fun initLogging(source: S) {}
@@ -120,13 +87,14 @@ abstract class Command<S>(val prefix: String = "!",
         }
         val tokens = cmd.trim().split(" ").toMutableList()
         tokens.removeAt(0)
-        val values = parseArguments(tokens, argParsers)
-        if (!verifyParameters(values)) {
-            respond(usage)
-            return
+        for (argDefinition in argDefinitions) {
+            if (tokens.isEmpty()) break
+            val success = argDefinition.parse(tokens)
+            if (!success) {
+                respond(usage)
+                return
+            }
         }
-        argsValues.clear()
-        argsValues.addAll(values)
         called(source)
     }
 
@@ -146,14 +114,14 @@ class TestCommand:
 
     //val integer: List<Int?> by argument(FullVarargParser(IntegerParser))
     val integer1: Int by argument(IntegerParser)
-    //val integer2: Int? by optionalArgument(IntegerParser)
+    val integer2: Int? by optionalArgument(IntegerParser)
     //val leftover by optionalArgument(LeftoverParser)
 
     override fun called(source: Any) {
-        println("$integer1")
+        println("$integer1 $integer2")
     }
 }
 
 fun main() {
-    TestCommand().execute(0, "!test test 1 test 1 1")
+    TestCommand().execute(0, "!test 1 2")
 }
