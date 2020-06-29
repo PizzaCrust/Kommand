@@ -36,27 +36,24 @@ object LeftoverParser: ArgumentParser<String>() {
 enum class DurationUnit(val ms: Long, vararg val aliases: String) {
     MS(1, "milliseconds", "millisecond"),
     MIN(1000 * 60, "minutes", "minute", "m"),
-    HR(MIN.ms * 60, "hours", "hour", "hrs", "hr", "h"),
-    DAY(HR.ms * 24, "days", "day", "d"),
+    HR(MIN.ms * 60, "hours", "hour", "hrs", "h"),
+    DAY(HR.ms * 24, "days", "d"),
     SEC(MS.ms * 1000, "seconds", "second", "s");
 
     fun interval(str: String): Int? {
-        var string = str.toLowerCase().replace(name, "")
-        aliases.forEach {
-            string = string.replace(it, "")
-        }
-        return string.trim().toIntOrNull()
+        return str.replace("[^0-9]".toRegex(), "").toIntOrNull()
     }
 
     companion object {
 
         fun from(str: String): DurationUnit? {
+            val unit = str.replace("[0-9]".toRegex(), "").toLowerCase().trim()
             for (value in values()) {
-                if (value.name.endsWith(str.toLowerCase())) {
+                if (unit.equals(value.name, true)) {
                     return value
                 }
                 for (alias in value.aliases) {
-                    if (str.toLowerCase().endsWith(alias)) {
+                    if (unit.equals(alias, true)) {
                         return value
                     }
                 }
