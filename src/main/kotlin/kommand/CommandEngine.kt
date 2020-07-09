@@ -77,7 +77,13 @@ abstract class Command<S>(val prefix: String = "!",
         val tokens = cmd.trim().split(" ").toMutableList()
         tokens.removeAt(0)
         for (argDefinition in argDefinitions) {
-            if (tokens.isEmpty()) break
+            if (tokens.isEmpty()) {
+                if (argDefinition.required) {
+                    respond(usage)
+                    return
+                }
+                break
+            }
             val success = argDefinition.parse(tokens)
             if (!success) {
                 respond(usage)
@@ -112,5 +118,5 @@ class TestCommand:
 }
 
 fun main() {
-    TestCommand().execute(0, "!test 1 2")
+    TestCommand().execute(0, "!test")
 }
