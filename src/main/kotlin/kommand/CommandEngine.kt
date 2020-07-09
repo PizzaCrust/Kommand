@@ -66,6 +66,9 @@ abstract class Command<S>(val prefix: String = "!",
     protected open fun initLogging(source: S) {}
 
     fun execute(source: S, cmd: String) {
+        argDefinitions.forEach {
+            it.value = null
+        }
         val tokens = cmd.trim().split(" ").toMutableList()
         if (tokens[0].replace(prefix, "") != name) {
             return
