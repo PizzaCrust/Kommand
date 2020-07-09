@@ -66,16 +66,16 @@ abstract class Command<S>(val prefix: String = "!",
     protected open fun initLogging(source: S) {}
 
     fun execute(source: S, cmd: String) {
-        if (!cmd.startsWith("$prefix$name")) {
+        val tokens = cmd.trim().split(" ").toMutableList()
+        if (tokens[0].replace(prefix, "") != name) {
             return
         }
+        tokens.removeAt(0)
         initLogging(source)
         if (!requirements.all { it.allowed(source) }) {
             respond("Missing permission(s) to execute this command.")
             return
         }
-        val tokens = cmd.trim().split(" ").toMutableList()
-        tokens.removeAt(0)
         for (argDefinition in argDefinitions) {
             if (tokens.isEmpty()) {
                 if (argDefinition.required) {
