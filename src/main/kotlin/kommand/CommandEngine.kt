@@ -70,7 +70,7 @@ abstract class Command<S>(val prefix: String = "!",
             return
         }
         initLogging(source)
-        if (requirements.all { it.allowed(source) }) {
+        if (!requirements.all { it.allowed(source) }) {
             respond("Missing permission(s) to execute this command.")
             return
         }
