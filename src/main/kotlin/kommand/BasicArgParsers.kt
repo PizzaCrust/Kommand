@@ -38,6 +38,7 @@ enum class DurationUnit(val ms: Long, vararg val aliases: String) {
     MIN(1000 * 60, "minutes", "minute", "m"),
     HR(MIN.ms * 60, "hours", "hour", "hrs", "h"),
     DAY(HR.ms * 24, "days", "d"),
+    YEAR(DAY.ms * 365, "years", "y"),
     SEC(MS.ms * 1000, "seconds", "second", "s");
 
     fun interval(str: String): Int? {
